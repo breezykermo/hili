@@ -7,10 +7,10 @@ Scriptable is a free app that lets you write custom logic that makes use of iOS 
 ## Setup
 1. Download [Scriptable](http://scriptable.app) from the app store.
 2. Create a new script called 'Clip to Hili', and copy the code from 'action.js' in this repo (just open the repo on Github in web, and copy using your system clipboard).
-3. Edit the first three lines in 'action.js' to designate your server URL, pass, and any tags you want readily available.
+3. Edit the first two lines in 'action.js' to designate your server URL and password.
 
 ## Workflow
 1. Highlight the text you want to send. Copy it to the clipboard using the little popup.
 2. Click the Share icon on the browser menu (top right; NOT the 'Share' that is made available via the tooltip after highlighting text).
 3. Select Scriptable's 'Run Script' action (best if you put it in favourites, so it's at the top).
-4. Hit your action, 'Clip to Hili'.
+4. Hit your action, 'Clip to Hili', and fill out the values (Enter to send).

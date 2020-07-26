@@ -1,10 +1,5 @@
 const HILI_URL = "your hili server URL"
 const HILI_PASS = "your hili key"
-/* Enter tags you want to be available at tap here */
-const TAGS = [
-  'test',
-  'myproj'
-]
 
 async function post(data) {
   const req = new Request(HILI_URL)
@@ -16,54 +11,51 @@ async function post(data) {
   req.method = 'POST'
   req.body = JSON.stringify(data)
   const resp = await req.load()
-  QuickView.present(resp)
 }
 
 /** Send the clip **/
-async function sendClipWithTag(clip, tag, srcUrl, dtUrl) {
+async function sendClip(clip, note, tags, srcUrl, dtUrl) {
   const data = {
     href: srcUrl,
-    title: '',
+    title: dtUrl,
     time: +new Date(),
     text: clip,
-    html: dtUrl !== null ? dtUrl : '',
-    tags: dtUrl !== null ? ['dt', tag] : [tag]
+    note,
+    tags
   }
   await post(data)
 }
 
 
 /* Text to clip, should have been put on the clipboard */
-let clip = Pasteboard.paste()
+const clip = Pasteboard.paste()
 
 /* If reading in DevonTHINK, parse the item URL */
-let dtUrl;
+let dtUrl = '';
 if (args.plainTexts.length > 0) {
   let t = args.plainTexts[0].match(/x-devonthink-item.*/)
-  if (t !== null && t.length === 1) dtUrl = t[0];
+  if (t !== null && t.length === 1) dtUrl = t[0].trim();
 }
 
 /* The URL from the browser */
-let ogUrl = args.urls[0]
+const ogUrl = args.urls[0]
 
-/* show tags menu */
+/* Construct menu */
 const alert = new Alert()
-TAGS.forEach(function(tag) {
-  alert.addAction(tag)
-})
-alert.addAction("Add new")
-const selectIdx = await alert.presentSheet()
+alert.title = "clip to hili"
+const urlMsg = `\n\n${ogUrl}`
+const dtUrlMsg = dtUrl !== '' ? `\n\n${dtUrl}` : ''
+alert.message = clip + urlMsg + dtUrlMsg
+alert.addTextField("note...")
+alert.addTextField("tags (comma-separated)...")
+alert.addCancelAction("cancel")
+alert.addAction("clip")
+const idx = await alert.presentAlert()
+if (idx === -1) return
 
-let tag
-if (selectIdx === TAGS.length) {
-  /* if 'Add new' selected, let user write a new tag */
-  const newAlert = new Alert()
-  newAlert.addTextField()
-  await newAlert.present()
-  tag = newAlert.textFieldValue(0)
-} else {
-  /* otherwise parse from menu */
-  tag = TAGS[selectIdx]
-}
+alert.textFieldValue(1)
 
-sendClipWithTag(clip, tag, ogUrl, dtUrl)
+const note = alert.textFieldValue(0)
+const tags = alert.textFieldValue(1).split(',').map(t => t.trim())
+
+sendClip(clip, note, tags, ogUrl, dtUrl)
