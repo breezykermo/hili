@@ -14,12 +14,12 @@ async function post(data) {
 }
 
 /** Send the clip **/
-async function sendClip(clip, note, tags, srcUrl, dtUrl) {
+async function sendClipWithTag(quote, note, tags, srcUrl, dtUrl) {
   const data = {
     href: srcUrl,
-    title: dtUrl,
+    dt_href: dtUrl,
     time: +new Date(),
-    text: clip,
+    quote,
     note,
     tags
   }
@@ -27,8 +27,8 @@ async function sendClip(clip, note, tags, srcUrl, dtUrl) {
 }
 
 
-/* Text to clip, should have been put on the clipboard */
-const clip = Pasteboard.paste()
+/* Quoted text should have been put on the clipboard */
+const quote = Pasteboard.paste()
 
 /* If reading in DevonTHINK, parse the item URL */
 let dtUrl = '';
@@ -45,7 +45,7 @@ const alert = new Alert()
 alert.title = "clip to hili"
 const urlMsg = `\n\n${ogUrl}`
 const dtUrlMsg = dtUrl !== '' ? `\n\n${dtUrl}` : ''
-alert.message = clip + urlMsg + dtUrlMsg
+alert.message = quote + urlMsg + dtUrlMsg
 alert.addTextField("note...")
 alert.addTextField("tags (comma-separated)...")
 alert.addCancelAction("cancel")
@@ -53,7 +53,9 @@ alert.addAction("clip")
 const idx = await alert.presentAlert()
 if (idx === -1) return
 
+alert.textFieldValue(1)
+
 const note = alert.textFieldValue(0)
 const tags = alert.textFieldValue(1).split(',').map(t => t.trim())
 
-sendClip(clip, note, tags, ogUrl, dtUrl)
+sendClipWithTag(quote, note, tags, ogUrl, dtUrl)
