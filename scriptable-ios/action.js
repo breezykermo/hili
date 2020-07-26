@@ -53,8 +53,6 @@ alert.addAction("clip")
 const idx = await alert.presentAlert()
 if (idx === -1) return
 
-alert.textFieldValue(1)
-
 const note = alert.textFieldValue(0)
 const tags = alert.textFieldValue(1).split(',').map(t => t.trim())
 
