@@ -128,6 +128,7 @@ function highlightText() {
     html = getSelectionHtml(selection);
   }
   if (text) {
+    let note = prompt('Note', '').trim()
     let tags = prompt('Tags', last_tags).split(',').map((t) => t.trim());
     if (tags == null) return;
     last_tags = tags.join(', ');
@@ -135,9 +136,10 @@ function highlightText() {
       href: window.location.href,
       title: document.title,
       time: +new Date(),
-      text: text,
-      html: html,
-      tags: tags
+      note,
+      quote: text,
+      html,
+      tags,
     };
     post(data);
   }
