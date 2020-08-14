@@ -2,8 +2,8 @@
   "description": "Highlight",
   "manifest_version": 2,
   "name": "hili",
-  "version": "1.3.8",
-  "homepage_url": "https://github.com/frnsys/hili",
+  "version": "1.0.0",
+  "homepage_url": "https://github.com/breezykermo/hili",
   "icons": {
     "48": "icons/icon-48.png"
   },
@@ -27,7 +27,8 @@
   ],
   "applications": {
     "gecko": {
-      "id": "hili@publicscience.co"
+      "id": "hili@ohrg.org",
+      "strict_min_version": "42.0"
     }
   }
 }
