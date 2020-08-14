@@ -5,6 +5,7 @@ curl -X POST -H "Authentication: KEY" -H "Content-Type: application/json" --data
 """
 
 import os
+import io
 import json
 import base64
 import hashlib
@@ -70,10 +71,10 @@ class JSONRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         self.send_response(200)
-        self.send_header('Content-type', 'text/plain; charset=utf-8')
         self.end_headers()
+        self.wfile.write(bytes('<html><head><title>Title goes here.</title><meta charset="utf-8"></head><style>a { text-decoration: none; color: inherit; }</style>','utf-8'))
 
-        with open(args.FILE, 'r') as f:
+        with io.open(args.FILE, mode='r', encoding='utf-8') as f:
             data = [json.loads(l) for l in f.readlines()]
 
         text = []
@@ -82,11 +83,24 @@ class JSONRequestHandler(BaseHTTPRequestHandler):
             if tags is not None and len(set(d['tags']) & set(tags)) == 0:
                 continue
             item = []
-            for k, v in d.items():
-                item.append('{}:\t{}'.format(k, v).encode('utf8'))
-            text.append(b'\n'.join(item))
-        self.wfile.write(b'\n\n'.join(text[::-1]))
+            for k in ['quote', 'note', 'tags']:
+                item.append(fmt_show(k, d[k]))
+            href = d['dt_href'] if 'dt_href' in d else d['href']
+            text.append('<a href="'+href+'" style="width:100%;">'+''.join(item)+'</a>')
+        for t in text:
+            self.wfile.write(bytes(t, 'utf-8'))
+            self.wfile.write(bytes('<hr/>', 'utf-8'))
+        self.wfile.write(bytes('</html>','utf-8'))
 
+def fmt_show(k, val):
+    r = ''
+    if k == 'quote':
+        r = '<i style="color:#666;">'+val+'</i><br/>'
+    if k == 'note':
+        r = '<span>&nbsp;&nbsp;'+val+'</span><br/>' if val.strip() != '' else ''
+    if k == 'tags':
+        r = '<div style="text-align:right;"><small>'+(' | '.join(val))+'</small></div>'
+    return r
 
 if __name__ == '__main__':
     print('Running on port', args.PORT)
