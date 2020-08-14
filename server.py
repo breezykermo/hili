@@ -87,7 +87,7 @@ class JSONRequestHandler(BaseHTTPRequestHandler):
                 item.append(fmt_show(k, vl))
             href = d['dt_href'] if 'dt_href' in d else d['href']
             text.append('<a href="'+href+'" style="width:100%;">'+''.join(item)+'</a>')
-        for t in text:
+        for t in text[::-1]:
             self.wfile.write(bytes(t, 'utf-8'))
             self.wfile.write(bytes('<hr/>', 'utf-8'))
         self.wfile.write(bytes('</html>','utf-8'))
