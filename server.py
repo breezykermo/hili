@@ -5,7 +5,6 @@ curl -X POST -H "Authentication: KEY" -H "Content-Type: application/json" --data
 """
 
 import os
-import io
 import json
 import base64
 import hashlib
@@ -74,7 +73,7 @@ class JSONRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(bytes('<html><head><title>Title goes here.</title><meta charset="utf-8"></head><style>a { text-decoration: none; color: inherit; }</style>','utf-8'))
 
-        with io.open(args.FILE, mode='r', encoding='utf-8') as f:
+        with open(args.FILE, 'r') as f:
             data = [json.loads(l) for l in f.readlines()]
 
         text = []
@@ -84,7 +83,8 @@ class JSONRequestHandler(BaseHTTPRequestHandler):
                 continue
             item = []
             for k in ['quote', 'note', 'tags']:
-                item.append(fmt_show(k, d[k]))
+                vl = d[k] if d.get(k) is not None else d.get('clip') #NB: hack for back compat
+                item.append(fmt_show(k, vl))
             href = d['dt_href'] if 'dt_href' in d else d['href']
             text.append('<a href="'+href+'" style="width:100%;">'+''.join(item)+'</a>')
         for t in text:
