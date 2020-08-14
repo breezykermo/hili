@@ -10,6 +10,7 @@ import base64
 import hashlib
 import argparse
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import parse_qs
 
 parser = argparse.ArgumentParser(description='A simple server to receive and save JSON data')
 parser.add_argument('FILE', type=str, help='File to save received data')
@@ -76,7 +77,10 @@ class JSONRequestHandler(BaseHTTPRequestHandler):
             data = [json.loads(l) for l in f.readlines()]
 
         text = []
+        tags = parse_qs(self.path).get('/?t')
         for d in data:
+            if tags is not None and len(set(d['tags']) & set(tags)) == 0:
+                continue
             item = []
             for k, v in d.items():
                 item.append('{}:\t{}'.format(k, v).encode('utf8'))
