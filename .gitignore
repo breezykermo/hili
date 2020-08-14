@@ -2,3 +2,5 @@ data/
 tags
 tags.lock
 tags.temp
+firefox/.web-extension-id
+*.json
