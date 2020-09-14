@@ -85,7 +85,7 @@ class JSONRequestHandler(BaseHTTPRequestHandler):
             for k in ['quote', 'note', 'tags']:
                 vl = d[k] if d.get(k) is not None else d.get('clip') #NB: hack for back compat
                 item.append(fmt_show(k, vl))
-            href = d['dt_href'] if ('dt_href' in d and d['dt_href'] != '') else d['href']
+            href = d['dt_href'] if ('dt_href' in d and d['dt_href'] != '') else d['href'] if ('href' in d) else ''
             text.append('<a target="_blank" href="'+href+'" style="width:100%;">'+''.join(item)+'</a>')
         for t in text[::-1]:
             self.wfile.write(bytes(t, 'utf-8'))
