@@ -24,7 +24,8 @@ read pdf
 
 # TODO: test remarkable is plugged in, IP address correct, etc.
 
-remt index "$pdf" & show_spinner "$!"
+rm /tmp/remt_anns.txt
+remt index "$pdf" >> /tmp/remt_anns.txt & show_spinner "$!"
 
 python from_remt.py
 nvim /tmp/clips.yml
