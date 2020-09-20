@@ -24,11 +24,19 @@ read pdf
 
 # TODO: test remarkable is plugged in, IP address correct, etc.
 
-rm /tmp/remt_anns.txt
+remt export "$pdf" ~/Desktop/$(basename $pdf).pdf & show_spinner "$!"
+
+echo "Put the file from your desktop to DT, and then copy/paste the dt URL here:"
+read dtUrl
+
+if [ -f /tmp/remt_anns.txt ]; then
+	rm /tmp/remt_anns.txt
+fi
+
 remt index "$pdf" >> /tmp/remt_anns.txt & show_spinner "$!"
 
-python from_remt.py
-nvim /tmp/clips.yml
+python3 from_remt.py $dtUrl
+# nvim /tmp/clips.yml
 
 # TODO: prompt for DT url (manual to start), then eventually just export the thing to DT.
 # then clip all to hili

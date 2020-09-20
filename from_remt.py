@@ -2,6 +2,7 @@ import re
 import os
 import tempfile
 from subprocess import call
+from typing import List
 
 INPUT = "/tmp/remt_anns.txt"
 EDITOR = os.environ.get('EDITOR', 'nvim')
@@ -20,10 +21,21 @@ def present(quotes):
         print(quotes)
         inp = term.inkey()
 
-def hili_template(quote):return f"{quote}\n---\n\n---\n\n"
+def hili_template(quote): return quote
+
 def tra_parens(s): return int(s[s.find("(")+1:s.find(")")])
 
-def run():
+def get_clip_to_hili(dtUrl):
+    def l(obj):
+        quote = obj["quote"]
+        note = obj["note"]
+        tags = obj["tags"]
+        # TODO: POST request
+        print(quote, note, tags, dtUrl)
+    return l
+
+def run(dtUrl):
+    clip_to_hili = get_clip_to_hili(dtUrl)
     with open(INPUT, 'r') as f:
         lines = f.readlines()
 
@@ -69,7 +81,29 @@ def run():
 
             tf.seek(0)
             edited_message = tf.readlines()
-        print(edited_message)
+        ultimate += edited_message
         break
+
+
+    ptr = 0
+    current = {}
+    import pdb; pdb.set_trace()
+    while ptr < len(ultimate):
+        if ultimate[ptr].decode("utf-8") == "\n":
+            clip_to_hili(current)
+            current = {}
+            ptr += 1
+        current["quote"] = ultimate[ptr].decode("utf-8")
+        current["note"] = ultimate[ptr+1].decode("utf-8")
+        current["tags"] = [x.strip() for x in ultimate[ptr+2].decode("utf-8").split(",")]
+        ptr += 3
+
+import argparse
 if __name__ == "__main__":
-    run()
+    p = argparse.ArgumentParser()
+    p.add_argument('url', nargs='?', default='no_dturl_given')
+    args = p.parse_args()
+    if args.url == 'no_dturl_given':
+        print("You need to give a URL!!!")
+    else:
+        run(args.url)
