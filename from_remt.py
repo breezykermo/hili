@@ -4,7 +4,6 @@ import time
 import requests
 import tempfile
 from subprocess import call
-from typing import List
 
 SERVER_URL = "https://research.forensic-architecture.org/hili"
 PASSWORD = "protecttheanns"
@@ -114,6 +113,8 @@ def run(dtUrl):
         ultimate += edited_message
 
     if was_broke:
+        ## TODO: flush well-formatted messages to hili, and store something on
+        ## disk so that this can be picked up
         return
 
     ptr = 0
