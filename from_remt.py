@@ -95,6 +95,7 @@ def run(dtUrl):
     # this is the main part: present all the quotes as vim files to edit
     # can use registers to copy common tags, etc
     ultimate = []
+    was_broke = False
     for l in sanitized:
         initial_message = hili_template(l.strip())
         with tempfile.NamedTemporaryFile(suffix=".tmp") as tf:
@@ -105,7 +106,15 @@ def run(dtUrl):
 
             tf.seek(0)
             edited_message = tf.readlines()
+
+        if len(edited_message) <= 2:
+            was_broke = True
+            break
+
         ultimate += edited_message
+
+    if was_broke:
+        return
 
     ptr = 0
     current = {}
