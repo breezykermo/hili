@@ -19,6 +19,8 @@ show_spinner()
 eval "$(conda shell.bash hook)"
 conda activate remarkable-layers
 
+python3 -m webbrowser -t "http://10.11.99.1"
+
 echo "Enter the name of the file on your remarkable:"
 read pdf
 

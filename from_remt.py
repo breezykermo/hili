@@ -1,8 +1,13 @@
 import re
 import os
+import time
+import requests
 import tempfile
 from subprocess import call
 from typing import List
+
+SERVER_URL = "https://research.forensic-architecture.org/hili"
+PASSWORD = "protecttheanns"
 
 INPUT = "/tmp/remt_anns.txt"
 EDITOR = os.environ.get('EDITOR', 'nvim')
@@ -25,13 +30,30 @@ def hili_template(quote): return quote
 
 def tra_parens(s): return int(s[s.find("(")+1:s.find(")")])
 
-def get_clip_to_hili(dtUrl):
+def get_clip_to_hili(url):
     def l(obj):
+        tm = int(round(time.time() * 1000))
         quote = obj["quote"]
         note = obj["note"]
         tags = obj["tags"]
         # TODO: POST request
-        print(quote, note, tags, dtUrl)
+        body = {
+            "time": tm,
+            "quote": quote,
+            "note": note,
+            "tags": tags,
+            "dt_href": url,
+            "href": ''
+        }
+        r = requests.post(
+            SERVER_URL,
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authentication": PASSWORD,
+            },
+            json = body
+        )
     return l
 
 def run(dtUrl):
@@ -70,6 +92,8 @@ def run(dtUrl):
     if os.path.exists(clipp):
         os.remove(clipp)
 
+    # this is the main part: present all the quotes as vim files to edit
+    # can use registers to copy common tags, etc
     ultimate = []
     for l in sanitized:
         initial_message = hili_template(l.strip())
@@ -82,12 +106,9 @@ def run(dtUrl):
             tf.seek(0)
             edited_message = tf.readlines()
         ultimate += edited_message
-        break
-
 
     ptr = 0
     current = {}
-    import pdb; pdb.set_trace()
     while ptr < len(ultimate):
         if ultimate[ptr].decode("utf-8") == "\n":
             clip_to_hili(current)
@@ -97,6 +118,8 @@ def run(dtUrl):
         current["note"] = ultimate[ptr+1].decode("utf-8")
         current["tags"] = [x.strip() for x in ultimate[ptr+2].decode("utf-8").split(",")]
         ptr += 3
+    # clip that last note!
+    clip_to_hili(current)
 
 import argparse
 if __name__ == "__main__":
