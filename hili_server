@@ -30,6 +30,7 @@ if [[ ! -z "$KEY" ]]; then
 fi
 CMD="python server.py /app/annos.json /app/saved_files -p $INNER_PORT $KEY_FLAG"
 runsetup $@ && docker run -d \
+	--name hili_server \
 	-p $HOST_PORT:$INNER_PORT \
 	-v $(pwd)/$ANNS_FILE:/app/annos.json \
 	-v $(pwd)/$ASSETS_DIR:/app/saved_files \

@@ -1,0 +1,6 @@
+#!/usr/bin/env
+
+docker stop hili_server
+docker rm hili_server
+rm -rf anns.json assets/
+KEY=$1 bash hili_server
