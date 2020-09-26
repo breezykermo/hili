@@ -53,18 +53,19 @@ def run():
         # if clip is successful, flush all cached
         if os.path.exists(CACHE):
             with open(CACHE, "r") as c:
-                cached_clips = json.loads(l) for l in c.readlines()]
+                cached_clips = [json.loads(l) for l in c.readlines()]
 
         for cached_clip in cached_clips:
             send(cached_clip)
 
         os.remove(CACHE)
 
-    except requests.ConnectionError as e:
+    # TODO: only catch the specifics
+    except requests.ConnectionError:
         is_first = not os.path.exists(CACHE)
         with open(CACHE, "a") as cache:
             if not is_first: cache.write("\n")
-            json.dump(body, cache)
+            json.dump(clip, cache)
         print("No internet connection, dumped to cache")
 
 

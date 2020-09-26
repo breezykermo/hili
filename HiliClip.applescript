@@ -41,7 +41,7 @@ tell application id "DNtp"
     do shell script "echo " & quoted form of theTags & " >> /tmp/args.txt"
     do shell script "echo " & quoted form of theUrl & " >> /tmp/args.txt"
 
-    do shell script "cd /Users/lachlankermode/code/pkb/hili && clip_to_hili.py > /tmp/hili_clip_log.txt"
+    do shell script "cd /Users/lachlankermode/code/pkb/hili && python3 clip_to_hili.py > /tmp/hili_clip_log.txt"
 
 	on error error_message number error_number
 		if the error_number is not -128 then display alert "DEVONthink Pro" message error_message as warning
