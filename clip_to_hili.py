@@ -1,4 +1,6 @@
 import sys
+import os
+import json
 import requests
 import time
 
@@ -7,7 +9,18 @@ PASSWORD = "protecttheanns"
 
 # applescript is a pain, esp with text characters; so writing args to a file is easiest.
 ARGS = "/tmp/args.txt"
+CACHE = "./cached_clips.json" # not in temp so it isn't removed
 
+def send(body):
+    requests.post(
+        SERVER_URL,
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authentication": PASSWORD,
+        },
+        json = body
+    )
 
 def run():
     with open(ARGS, 'r') as f:
@@ -25,7 +38,7 @@ def run():
     tags = data[idx + 1].rstrip("\n").strip().split(",")
     url = data[idx + 2].rstrip("\n").strip()
 
-    body = {
+    clip = {
         "time": tm,
         "quote": quote,
         "note": note,
@@ -33,18 +46,26 @@ def run():
         "dt_href": url,
         "href": ''
     }
-    r = requests.post(
-        SERVER_URL,
-        headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authentication": PASSWORD,
-        },
-        json = body
-    )
 
-    print(body)
-    print(r.content)
+    try:
+        send(clip)
+
+        # if clip is successful, flush all cached
+        if os.path.exists(CACHE):
+            with open(CACHE, "r") as c:
+                cached_clips = json.loads(l) for l in c.readlines()]
+
+        for cached_clip in cached_clips:
+            send(cached_clip)
+
+        os.remove(CACHE)
+
+    except requests.ConnectionError as e:
+        is_first = not os.path.exists(CACHE)
+        with open(CACHE, "a") as cache:
+            if not is_first: cache.write("\n")
+            json.dump(body, cache)
+        print("No internet connection, dumped to cache")
 
 
 
