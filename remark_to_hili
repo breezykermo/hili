@@ -19,23 +19,25 @@ show_spinner()
 eval "$(conda shell.bash hook)"
 conda activate remarkable-layers
 
-python3 -m webbrowser -t "http://10.11.99.1"
+# python3 -m webbrowser -t "http://10.11.99.1"
 
-echo "Enter the name of the file on your remarkable:"
-read pdf
+if [ "$1" != "continue" ]; then
+	echo "Enter the name of the file on your remarkable:"
+	read pdf
 
-# TODO: test remarkable is plugged in, IP address correct, etc.
+	# TODO: test remarkable is plugged in, IP address correct, etc.
 
-remt export "$pdf" ~/Desktop/$(basename $pdf).pdf & show_spinner "$!"
+	remt export "$pdf" ~/Desktop/$(basename $pdf).pdf & show_spinner "$!"
+
+	if [ -f /tmp/remt_anns.txt ]; then
+		rm /tmp/remt_anns.txt
+	fi
+
+	remt index "$pdf" >> /tmp/remt_anns.txt & show_spinner "$!"
+fi
 
 echo "Put the file from your desktop to DT, and then copy/paste the dt URL here:"
 read dtUrl
-
-if [ -f /tmp/remt_anns.txt ]; then
-	rm /tmp/remt_anns.txt
-fi
-
-remt index "$pdf" >> /tmp/remt_anns.txt & show_spinner "$!"
 
 python3 from_remt.py $dtUrl
 # nvim /tmp/clips.yml

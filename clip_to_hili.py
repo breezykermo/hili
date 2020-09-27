@@ -22,6 +22,29 @@ def send(body):
         json = body
     )
 
+def attempt_clip(clip):
+    try:
+        send(clip)
+
+        # if clip is successful, flush all cached
+        if os.path.exists(CACHE):
+            with open(CACHE, "r") as c:
+                cached_clips = [json.loads(l) for l in c.readlines()]
+
+        for cached_clip in cached_clips:
+            send(cached_clip)
+
+        os.remove(CACHE)
+
+    # TODO: only catch the specifics
+    except requests.ConnectionError:
+        is_first = not os.path.exists(CACHE)
+        with open(CACHE, "a") as cache:
+            if not is_first: cache.write("\n")
+            json.dump(clip, cache)
+        print("No internet connection, dumped to cache")
+
+
 def run():
     with open(ARGS, 'r') as f:
         data = f.readlines()
@@ -47,28 +70,7 @@ def run():
         "href": ''
     }
 
-    try:
-        send(clip)
-
-        # if clip is successful, flush all cached
-        if os.path.exists(CACHE):
-            with open(CACHE, "r") as c:
-                cached_clips = [json.loads(l) for l in c.readlines()]
-
-        for cached_clip in cached_clips:
-            send(cached_clip)
-
-        os.remove(CACHE)
-
-    # TODO: only catch the specifics
-    except requests.ConnectionError:
-        is_first = not os.path.exists(CACHE)
-        with open(CACHE, "a") as cache:
-            if not is_first: cache.write("\n")
-            json.dump(clip, cache)
-        print("No internet connection, dumped to cache")
-
-
+    attempt_clip(clip)
 
 if __name__ == "__main__":
     run()

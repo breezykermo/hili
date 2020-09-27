@@ -1,7 +1,6 @@
 import re
 import os
 import time
-import requests
 import tempfile
 from subprocess import call
 
@@ -10,6 +9,45 @@ PASSWORD = "protecttheanns"
 
 INPUT = "/tmp/remt_anns.txt"
 EDITOR = os.environ.get('EDITOR', 'nvim')
+REMT_IDX = "./.remt_idx"
+
+# NOTE: these two function copied direct from clip_to_hili.py
+import requests
+import json
+CACHE = "./cached_clips.json" # not in temp so it isn't removed
+def send(body):
+    requests.post(
+        SERVER_URL,
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authentication": PASSWORD,
+        },
+        json = body
+    )
+
+def attempt_clip(clip):
+    try:
+        send(clip)
+
+        # if clip is successful, flush all cached
+        if os.path.exists(CACHE):
+            with open(CACHE, "r") as c:
+                cached_clips = [json.loads(l) for l in c.readlines()]
+
+        for cached_clip in cached_clips:
+            send(cached_clip)
+
+        os.remove(CACHE)
+
+    # TODO: only catch the specifics
+    except requests.ConnectionError:
+        is_first = not os.path.exists(CACHE)
+        with open(CACHE, "a") as cache:
+            if not is_first: cache.write("\n")
+            json.dump(clip, cache)
+        print("No internet connection, dumped to cache")
+
 
 """
 the solution here is probably to create a workflow where:
@@ -33,26 +71,16 @@ def get_clip_to_hili(url):
     def l(obj):
         tm = int(round(time.time() * 1000))
         quote = obj["quote"]
-        note = obj["note"]
+        note = obj["note"].strip("\n")
         tags = obj["tags"]
-        # TODO: POST request
-        body = {
+        attempt_clip({
             "time": tm,
             "quote": quote,
             "note": note,
             "tags": tags,
             "dt_href": url,
             "href": ''
-        }
-        r = requests.post(
-            SERVER_URL,
-            headers = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authentication": PASSWORD,
-            },
-            json = body
-        )
+        })
     return l
 
 def run(dtUrl):
@@ -95,7 +123,18 @@ def run(dtUrl):
     # can use registers to copy common tags, etc
     ultimate = []
     was_broke = False
+    idx = 0
+    start_idx = None
+
+    if os.path.exists(REMT_IDX):
+        with open(REMT_IDX, "r") as fp:
+            on_disk = json.load(fp)
+        start_idx = on_disk["idx"]
+
     for l in sanitized:
+        if start_idx is not None and idx < start_idx:
+            idx += 1
+            continue
         initial_message = hili_template(l.strip())
         with tempfile.NamedTemporaryFile(suffix=".tmp") as tf:
             with open(tf.name, 'w+') as f:
@@ -110,26 +149,28 @@ def run(dtUrl):
             was_broke = True
             break
 
-        ultimate += edited_message
+        # send all clips
+        ptr = 0
+        current = {}
+        while ptr < len(edited_message):
+            if edited_message[ptr].decode("utf-8") == "\n":
+                clip_to_hili(current)
+                current = {}
+                ptr += 1
+            current["quote"] = edited_message[ptr].decode("utf-8")
+            current["note"] = edited_message[ptr+1].decode("utf-8")
+            current["tags"] = [x.strip() for x in edited_message[ptr+2].decode("utf-8").split(",")]
+            ptr += 3
+        # clip that last note!
+        clip_to_hili(current)
+        idx += 1
 
     if was_broke:
-        ## TODO: flush well-formatted messages to hili, and store something on
-        ## disk so that this can be picked up
-        return
+        with open(REMT_IDX, "w") as f:
+            json.dump({ "idx": idx }, f)
+    else:
+        os.remove(REMT_IDX)
 
-    ptr = 0
-    current = {}
-    while ptr < len(ultimate):
-        if ultimate[ptr].decode("utf-8") == "\n":
-            clip_to_hili(current)
-            current = {}
-            ptr += 1
-        current["quote"] = ultimate[ptr].decode("utf-8")
-        current["note"] = ultimate[ptr+1].decode("utf-8")
-        current["tags"] = [x.strip() for x in ultimate[ptr+2].decode("utf-8").split(",")]
-        ptr += 3
-    # clip that last note!
-    clip_to_hili(current)
 
 import argparse
 if __name__ == "__main__":
