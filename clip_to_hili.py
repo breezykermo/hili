@@ -31,10 +31,10 @@ def attempt_clip(clip):
             with open(CACHE, "r") as c:
                 cached_clips = [json.loads(l) for l in c.readlines()]
 
-        for cached_clip in cached_clips:
-            send(cached_clip)
+            for cached_clip in cached_clips:
+                send(cached_clip)
 
-        os.remove(CACHE)
+            os.remove(CACHE)
 
     # TODO: only catch the specifics
     except requests.ConnectionError:
