@@ -6,3 +6,4 @@ firefox/.web-extension-id
 *.json
 cached_clips.json
 .remt_idx
+nbs/

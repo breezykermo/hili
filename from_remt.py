@@ -145,31 +145,34 @@ def run(dtUrl):
             tf.seek(0)
             edited_message = tf.readlines()
 
-        if len(edited_message) <= 2:
+        should_skip = len(edited_message) == 0
+
+        if len(edited_message) <= 2 and not should_skip:
             was_broke = True
             break
 
         # send all clips
-        ptr = 0
-        current = {}
-        while ptr < len(edited_message):
-            if edited_message[ptr].decode("utf-8") == "\n":
-                clip_to_hili(current)
-                current = {}
-                ptr += 1
-            current["quote"] = edited_message[ptr].decode("utf-8")
-            current["note"] = edited_message[ptr+1].decode("utf-8")
-            current["tags"] = [x.strip() for x in edited_message[ptr+2].decode("utf-8").split(",")]
-            ptr += 3
-        # clip that last note!
-        clip_to_hili(current)
+        if not should_skip:
+            ptr = 0
+            current = {}
+            while ptr < len(edited_message):
+                if "quote" in current and "note" in current and "tags" in current:
+                    clip_to_hili(current)
+                    current = {}
+                current["quote"] = edited_message[ptr].decode("utf-8")
+                current["note"] = edited_message[ptr+1].decode("utf-8")
+                current["tags"] = [x.strip() for x in edited_message[ptr+2].decode("utf-8").split(",")]
+                ptr += 3
+            # clip that last note!
+            clip_to_hili(current)
         idx += 1
 
     if was_broke:
         with open(REMT_IDX, "w") as f:
             json.dump({ "idx": idx }, f)
     else:
-        os.remove(REMT_IDX)
+        if os.path.exists(REMT_IDX):
+            os.remove(REMT_IDX)
 
 
 import argparse

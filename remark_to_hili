@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+RMK_EXPORT_FOLDER="exporting"
+PDF_EXPORT_FOLDER="/Users/lachlankermode/Desktop"
+PKB_FOLDER="/Users/lachlankermode/Desktop/obsidian"
 
 show_spinner()
 {
@@ -20,27 +23,30 @@ eval "$(conda shell.bash hook)"
 conda activate remarkable-layers
 
 # python3 -m webbrowser -t "http://10.11.99.1"
+remt ls $RMK_EXPORT_FOLDER
+echo "Enter the name of the file on your remarkable:"
+read pdf
 
 if [ "$1" != "continue" ]; then
-	echo "Enter the name of the file on your remarkable:"
-	read pdf
-
 	# TODO: test remarkable is plugged in, IP address correct, etc.
 
-	remt export "$pdf" ~/Desktop/$(basename $pdf).pdf & show_spinner "$!"
+	# remt export "$pdf" $PDF_EXPORT_FOLDER/$(basename $pdf).pdf & show_spinner "$!"
+	echo "$RMK_EXPORT_FOLDER/$pdf"
+	remt export -r remarkable "$RMK_EXPORT_FOLDER/$pdf" $PDF_EXPORT_FOLDER/$(basename $pdf).pdf & show_spinner "$!"
 
 	if [ -f /tmp/remt_anns.txt ]; then
 		rm /tmp/remt_anns.txt
 	fi
 
-	remt index "$pdf" >> /tmp/remt_anns.txt & show_spinner "$!"
+	remt index "$RMK_EXPORT_FOLDER/$pdf" >> /tmp/remt_anns.txt & show_spinner "$!"
 fi
 
 echo "Put the file from your desktop to DT, and then copy/paste the dt URL here:"
 read dtUrl
 
-python3 from_remt.py $dtUrl
-# nvim /tmp/clips.yml
+touch $PKB_FOLDER/bib.$(basename $pdf).md
+
+python from_remt.py $dtUrl
 
 # TODO: prompt for DT url (manual to start), then eventually just export the thing to DT.
 # then clip all to hili
