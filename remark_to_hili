@@ -32,7 +32,7 @@ if [ "$1" != "continue" ]; then
 
 	# remt export "$pdf" $PDF_EXPORT_FOLDER/$(basename $pdf).pdf & show_spinner "$!"
 	echo "$RMK_EXPORT_FOLDER/$pdf"
-	remt export -r remarkable "$RMK_EXPORT_FOLDER/$pdf" $PDF_EXPORT_FOLDER/$(basename $pdf).pdf & show_spinner "$!"
+	remt export -r remt "$RMK_EXPORT_FOLDER/$pdf" $PDF_EXPORT_FOLDER/$(basename $pdf).pdf & show_spinner "$!"
 
 	if [ -f /tmp/remt_anns.txt ]; then
 		rm /tmp/remt_anns.txt
@@ -44,9 +44,7 @@ fi
 echo "Put the file from your desktop to DT, and then copy/paste the dt URL here:"
 read dtUrl
 
-touch $PKB_FOLDER/bib.$(basename $pdf).md
-
-python from_remt.py $dtUrl
+python3 from_remt.py $dtUrl
 
 # TODO: prompt for DT url (manual to start), then eventually just export the thing to DT.
 # then clip all to hili

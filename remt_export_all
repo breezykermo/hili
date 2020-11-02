@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# Export all PDFs from the 'exporting' folder using the remarkable render.
+# If you are getting a 'Connection refused' error, ensure that the USB
+# interface is enabled in your device settings.
+
+for pdf in $(remt ls exporting)
+do
+	current=$(basename $pdf)
+    echo Exporting $current...
+    if [[ ! $current =~ \.pdf ]]; then
+        current=${current}.pdf
+	fi
+    remt export -r remarkable $pdf ~/Desktop/$current
+done
+
+# Generate bib markdown files in obsidian vault.
+./gen_bib.py
