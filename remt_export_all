@@ -4,15 +4,26 @@
 # If you are getting a 'Connection refused' error, ensure that the USB
 # interface is enabled in your device settings.
 
-for pdf in $(remt ls exporting)
-do
-	current=$(basename $pdf)
-    echo Exporting $current...
+function get_basename() {
+	current=$(basename $1)
     if [[ ! $current =~ \.pdf ]]; then
         current=${current}.pdf
 	fi
-    remt export -r remarkable $pdf ~/Desktop/$current
+	echo $current
+}
+
+docs=$(remt ls exporting)
+for pdf in $docs
+do
+	basename=$(get_basename $pdf)
+	echo Exporting $basename...
+	remt export -r remarkable $pdf ~/Desktop/$basename
 done
 
-# Generate bib markdown files in obsidian vault.
+# # Generate bib markdown files in obsidian vault.
 ./gen_bib.py
+
+for pdf in $docs
+do
+	rm ~/Desktop/$(get_basename $pdf)
+done
