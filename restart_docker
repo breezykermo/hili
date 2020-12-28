@@ -1,5 +1,0 @@
-#!/usr/bin/env
-docker stop hili_server
-docker rm hili_server
-rm -rf clips.xml assets/
-KEY=$1 bash start_docker
