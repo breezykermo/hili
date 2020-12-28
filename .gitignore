@@ -1,9 +1,10 @@
-data/
 tags
 tags.lock
 tags.temp
-firefox/.web-extension-id
+*.xml
 *.json
-cached_clips.json
-.remt_idx
-nbs/
+
+firefox/.web-extension-id
+devonthink/cached_clips.json
+remarkable/.remt_idx
+
