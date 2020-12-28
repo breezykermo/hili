@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-IMGNAME=hili_server
+IMGNAME=hili
 EXPOSED_PORT=4000
 CONTAINER_PORT=8000
 CLIPS_FILE=clips.xml
@@ -35,10 +35,10 @@ STARTUP_CMD="python server.py /app/$CLIPS_FILE /app/$ASSETS_DIR -p $CONTAINER_PO
 
 # interpolate necessary args and start container
 runsetup $@ && docker run -d \
-	--name hili_server \
+	--name $IMGNAME \
 	-p $EXPOSED_PORT:$CONTAINER_PORT \
 	-v $(pwd)/$CLIPS_FILE:/app/$CLIPS_FILE \
 	-v $(pwd)/$ASSETS_DIR:/app/$ASSETS_DIR \
-	hili_server $STARTUP_CMD
+	$IMGNAME $STARTUP_CMD
 
-echo "hili_server running in docker, available on port $EXPOSED_PORT"
+echo "$IMGNAME running in docker, available on port $EXPOSED_PORT"
